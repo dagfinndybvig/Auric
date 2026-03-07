@@ -484,27 +484,49 @@ void AY3_8912::update_state_callback(Machine& machine)
     machine.ay3->update_state();
 }
 
-void AY3_8912::audio_callback(void* user_data, uint8_t* raw_buffer, int len)
+void AY3_8912::audio_callback(void* user_data,
+                              SDL_AudioStream* stream,
+                              int additional_amount,
+                              int total_amount)
 {
     AY3_8912* ay = reinterpret_cast<AY3_8912*>(user_data);
-    uint16_t* buffer = (uint16_t*)raw_buffer;
-    uint16_t samples = len/4;
 
-    uint32_t current_sample = 0;
+    if (ay->machine.warpmode_on) {
+        return;
+    }
 
-    if (ay->machine.warpmode_on) return;
+    // S16LE stereo = 4 bytes per sample frame
+    const int bytes_per_frame = sizeof(int16_t) * 2;
+    const int frames = additional_amount / bytes_per_frame;
 
-    for (size_t sample = 0; sample < samples; sample++) {
+    if (frames <= 0) {
+        return;
+    }
+
+    // Resize audio buffer if needed.
+    const int samples_needed = frames * 2;
+    if (static_cast<int>(ay->audio_buffer.size()) < samples_needed) {
+        ay->audio_buffer.resize(samples_needed);
+    }
+
+    // std::vector<int16_t> buf(frames * 2); // stereo: L,R,L,R,...
+
+    int out = 0;
+    for (int i = 0; i < frames; ++i) {
         uint32_t current_cycle = ay->state.cycle_count >> cycle_shift;
 
         ay->state.exec_register_changes(current_cycle);
         ay->state.exec_audio(current_cycle);
 
-        buffer[current_sample++] = ay->state.audio_out;
-        buffer[current_sample++] = ay->state.audio_out;
+        const int16_t sample = static_cast<int16_t>(ay->state.audio_out);
+
+        ay->audio_buffer[out++] = sample; // left
+        ay->audio_buffer[out++] = sample; // right
 
         ay->state.cycle_count += ay->state.cycles_per_sample;
     }
+
+    SDL_PutAudioStreamData(stream, ay->audio_buffer.data(), frames * bytes_per_frame);
 
     ay->state.trim_register_changes();
 
