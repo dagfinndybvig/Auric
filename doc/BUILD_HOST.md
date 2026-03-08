@@ -15,13 +15,11 @@ The following dependencies are required.
    * `Boost.Program_options`
    * `Boost.Circular_buffer`
  * `SDL3`
- * `SDL3_image`
 
 That means that the following packages could be installed on a Debian-based Linux system.
 
 ```
-$ apt install libboost-log-dev libboost-program-options-dev libboost-circular-buffer-dev
-$ apt install libsdl3-dev libsdl3-image-dev
+$ apt install libboost-log-dev libboost-program-options-dev libboost-circular-buffer-dev libsdl3-dev
 ``` 
 
 ## Configuring with CMake

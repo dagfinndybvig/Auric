@@ -19,9 +19,10 @@
 #include <unordered_map>
 
 #include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
 
 #include "frontend.hpp"
+#include "frontends/gui/status_bar.hpp"
+
 #include "chip/ay3_8912.hpp"
 #include "oric.hpp"
 
@@ -41,6 +42,7 @@ std::unordered_map<SDL_Scancode, uint8_t> oric_key_map;
 
 // ----- Frontend ----------------
 
+constexpr uint16_t status_bar_height = 20;
 constexpr uint16_t border_size_horizontal = 100;
 constexpr uint16_t border_size_vertical = 50;
 
@@ -52,10 +54,8 @@ Frontend::Frontend(Oric& oric) :
     oric(oric),
     sdl_window(nullptr),
     sdl_renderer(nullptr),
-    gui_active(false),
     gui(oric),
     oric_texture(texture_width, texture_height, texture_bpp),
-    status_bar((texture_width * oric.get_config().zoom()) + border_size_horizontal * 2, 16, texture_bpp),
     sound_audio_stream(nullptr),
     audio_locked(false)
 {
@@ -82,11 +82,6 @@ bool Frontend::init_graphics()
         return false;
     }
 
-    // if (!(IMG_Init(IMG_isPNG))) {
-    //     BOOST_LOG_TRIVIAL(error) << "Could not initialize sdl3_image: " << IMG_GetError();
-    //     return false;
-    // }
-
     // Set texture filtering to linear
     // if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear")) {
     //     BOOST_LOG_TRIVIAL(warning) << "Linear texture filtering not enabled!";
@@ -101,10 +96,10 @@ bool Frontend::init_graphics()
     oric_texture.render_rect.y = border_size_vertical;
 
     uint16_t width = oric_texture.render_rect.w + (border_size_horizontal * 2);
-    uint16_t height = oric_texture.render_rect.h + status_bar.render_rect.h + (border_size_vertical * 2);
+    uint16_t height = oric_texture.render_rect.h + status_bar_height + (border_size_vertical * 2);
 
-    status_bar.render_rect.x = 0;
-    status_bar.render_rect.y = height - status_bar.render_rect.h;
+    gui.status_bar().set_size(width, status_bar_height);
+    gui.status_bar().set_position(0, height - status_bar_height);
 
     sdl_window = SDL_CreateWindow(window_title.c_str(), width, height, 0);
     if (sdl_window == nullptr) {
@@ -115,9 +110,14 @@ bool Frontend::init_graphics()
     // Try to load a window icon.
     auto path = oric.get_config().images_path() / window_icon_name;
     if (std::filesystem::exists(path)) {
-        SDL_Surface* icon = IMG_Load(path.c_str());
-        if (icon) {
-            SDL_SetWindowIcon(sdl_window, icon);
+        SDL_Surface* icon = SDL_LoadSurface(path.string().c_str());
+        if (! icon) {
+            BOOST_LOG_TRIVIAL(error) << "Failed loading application icon: " << path << ": " << SDL_GetError();
+        }
+        else {
+            if (!SDL_SetWindowIcon(sdl_window, icon)) {
+                BOOST_LOG_TRIVIAL(error) << "Failed setting application icon";
+            }
             SDL_DestroySurface(icon);
         }
     }
@@ -132,16 +132,6 @@ bool Frontend::init_graphics()
 
     if (! oric_texture.create_texture(sdl_renderer)) {
         return false;
-    }
-
-    // Init status bar
-    auto font_path = oric.get_config().fonts_path() / "light.bin";
-    if (std::filesystem::exists(font_path)) {
-        status_bar.init(sdl_renderer, font_path);
-        BOOST_LOG_TRIVIAL(debug) << "Initialized staus bar with font: " << font_path;
-    }
-    else {
-        BOOST_LOG_TRIVIAL(warning) << "Status bar font file not found: " << font_path;
     }
 
     // Initialize renderer color
@@ -210,17 +200,14 @@ bool Frontend::handle_frame()
     while (SDL_PollEvent(&event)) {
         bool wanted_key = false;
         bool wanted_mouse = false;
-
-        if (gui_active) {
-            gui.handle_event(event, wanted_key, wanted_mouse);
-        }
+        gui.handle_event(event, wanted_key, wanted_mouse);
 
         auto scancode = event.key.scancode;
 
         // Toggle gui regardless of ImGui.
         if (event.type == SDL_EVENT_KEY_DOWN) {
             if (scancode == SDL_SCANCODE_F1) {
-                gui_active = !gui_active;
+                gui.toggle_gui();
             }
         }
 
@@ -294,17 +281,9 @@ void Frontend::render_graphics(std::vector<uint8_t>& pixels)
     SDL_SetRenderDrawColor(sdl_renderer, 0x00, 0x00, 0x00, 0xff);
     SDL_RenderClear(sdl_renderer);
 
-    if (status_bar.has_update()) {
-        status_bar.update_texture(sdl_renderer);
-    }
-
     SDL_UpdateTexture(oric_texture.texture, nullptr, &pixels[0], oric_texture.width * oric_texture.bpp);
     SDL_RenderTexture(sdl_renderer, oric_texture.texture, nullptr, &oric_texture.render_rect );
-    SDL_RenderTexture(sdl_renderer, status_bar.texture, nullptr, &status_bar.render_rect);
-
-    if (gui_active) {
-        gui.render();
-    }
+    gui.render();
 
     SDL_RenderPresent(sdl_renderer);
 }

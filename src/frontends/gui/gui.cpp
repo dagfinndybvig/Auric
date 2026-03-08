@@ -23,7 +23,8 @@
 #include <imgui_stdlib.h>
 #include "oric.hpp"
 
-Gui::Gui(Oric& oric) : oric(oric)
+Gui::Gui(Oric& oric) :
+    oric(oric), sdl_window(nullptr), sdl_renderer(nullptr), _status_bar(0, 0)
 {
 }
 
@@ -69,33 +70,37 @@ void Gui::render()
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
-    ImGui::Begin("Main menu", nullptr, ImGuiWindowFlags_NoMove);
+    if (show_gui) {
+        ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
+        ImGui::Begin("Main menu", nullptr, ImGuiWindowFlags_NoMove);
 
-    ImGui::Text("Snapshots:");
-    if (ImGui::Button("Save snapshot")) {
-        oric.get_machine().save_snapshot();
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Load snapshot")) {
-        oric.get_machine().load_snapshot();
+        ImGui::Text("Snapshots:");
+        if (ImGui::Button("Save snapshot")) {
+            oric.get_machine().save_snapshot();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Load snapshot")) {
+            oric.get_machine().load_snapshot();
+        }
+
+        ImGui::Text("Machine:");
+        if (ImGui::Button("Reset")) {
+            oric.get_machine().reset();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("NMI")) {
+            oric.get_machine().cpu->NMI();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Enter debugger")) {
+            oric.get_machine().stop();
+            oric.do_break();
+        }
+
+        ImGui::End();
     }
 
-    ImGui::Text("Machine:");
-    if (ImGui::Button("Reset")) {
-        oric.get_machine().reset();
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("NMI")) {
-        oric.get_machine().cpu->NMI();
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Enter debugger")) {
-        oric.get_machine().stop();
-        oric.do_break();
-    }
-
-    ImGui::End();
+    _status_bar.render();
 
     // Render ImGui
     ImGui::Render();

@@ -20,6 +20,7 @@
 
 #include <SDL3/SDL.h>
 
+#include "frontends/gui/status_bar.hpp"
 
 class Oric;
 
@@ -34,11 +35,19 @@ public:
     void handle_event(SDL_Event& event, bool& wanted_key, bool& wanted_mouse);
     void render();
 
+    StatusBar& status_bar() { return _status_bar; }
+
+    void toggle_gui() { show_gui = !show_gui; }
+
 private:
     Oric& oric;
 
     SDL_Window* sdl_window;
     SDL_Renderer* sdl_renderer;
+
+    StatusBar _status_bar;
+
+    bool show_gui{false};
 };
 
 

@@ -24,8 +24,6 @@
 #include <SDL3/SDL_audio.h>
 
 #include "texture.hpp"
-#include "status_bar.hpp"
-#include <gui.hpp>
 
 #include "frontends/gui/gui.hpp"
 
@@ -97,7 +95,7 @@ public:
      * Get reference to status bar handler.
      * @return reference to status bar handler
      */
-    virtual StatusBar& get_status_bar() { return status_bar; }
+    virtual StatusBar& get_status_bar() { return gui.status_bar(); }
 
     /**
      * Close sound.
@@ -123,11 +121,8 @@ protected:
     SDL_Window* sdl_window;
     SDL_Renderer* sdl_renderer;
 
-    bool gui_active;
     Gui gui;
-
     Texture oric_texture;
-    StatusBar status_bar;
 
     std::vector<uint8_t> status_pixels;
 

@@ -5,21 +5,19 @@ if (DEFINED CMAKE_TOOLCHAIN_FILE)
 
     find_package(Boost REQUIRED COMPONENTS log program_options circular_buffer)
     find_package(SDL3 CONFIG REQUIRED)
-    find_package(SDL3_image CONFIG REQUIRED)
     find_package(yaml-cpp CONFIG REQUIRED)
 
     set(BOOST_LIBRARIES Boost::log Boost::program_options Boost::circular_buffer)
-    set(SDL3_LIBRARIES SDL3::SDL3 SDL3_image::SDL3_image-static)
+    set(SDL3_LIBRARIES SDL3::SDL3)
 else ()
     message("Not using vcpkg")
 
     find_package(Boost 1.71.0 COMPONENTS program_options log)
     find_package(SDL3 CONFIG REQUIRED)
-    find_package(SDL3_image REQUIRED)
     find_package(yaml-cpp REQUIRED)
 
     set(BOOST_LIBRARIES ${Boost_LIBRARIES})
-    set(SDL3_LIBRARIES SDL3::SDL3 SDL3_image::SDL3_image)
+    set(SDL3_LIBRARIES SDL3::SDL3)
 endif ()
 
 add_subdirectory(chip)

@@ -1,7 +1,6 @@
 
 add_library(frontend_sdl3
         frontend.cpp
-        status_bar.cpp
         texture.cpp
 )
 

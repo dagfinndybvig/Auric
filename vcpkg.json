@@ -6,7 +6,6 @@
     "boost-log",
     "boost-program-options",
     "sdl3",
-    "sdl3-image",
     "yaml-cpp"
   ]
 }
