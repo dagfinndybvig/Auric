@@ -162,6 +162,7 @@ protected:
     int32_t gl_u_enable_vertical_lines;
     int32_t gl_u_enable_vignette;
     float gl_u_vignette_strength;
+    int32_t gl_u_texture_height;
 
     // Current video shader config.
     int32_t enable_scanlines;
