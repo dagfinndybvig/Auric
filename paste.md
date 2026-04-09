@@ -26,8 +26,9 @@ Press any key during an active paste to cancel it immediately.
   Each newline becomes a RETURN keypress, so multi-line programs work.
 - The emulator must be at a prompt or input state that accepts keyboard input.
 - Characters not present on the Oric keyboard are silently skipped.
-- Text is pasted at roughly 10 characters per second (each character is held
-  for 3 frames and followed by a 2-frame gap at the Oric's 50 Hz frame rate).
+- Text is pasted at roughly 10 characters per second for unshifted characters
+  (3-frame hold + 2-frame gap at 50 Hz).  Shifted characters (e.g. `:`, `"`,
+  lowercase letters) take one extra frame for a SHIFT-settle phase.
 
 ## Supported characters
 
@@ -77,8 +78,14 @@ The feature is entirely additive — no existing emulation code was modified.
    simulates typing one character at a time:
 
    ```
-   GAP (1 frame) → KEY_DOWN (2 frames) → KEY_UP → GAP → next character
+   Unshifted:  GAP (2 frames) → KEY_DOWN (3 frames) → KEY_UP → GAP → …
+   Shifted:    GAP (2 frames) → SHIFT_SETTLE (1 frame) → KEY_DOWN (3 frames) → KEY_UP → GAP → …
    ```
+
+   For shifted characters (e.g. `:`, `"`, lowercase letters), SHIFT is pressed
+   one frame before the character key.  This `SHIFT_SETTLE` phase ensures the
+   Oric ROM's keyboard scanner registers SHIFT reliably — without it, the
+   Oric-1 ROM sometimes missed SHIFT due to its slower debounce routine.
 
    The very first character uses a longer initial gap (5 frames / 100 ms)
    to let the cursor settle, ensuring alignment with other emulators like
@@ -86,8 +93,7 @@ The feature is entirely additive — no existing emulation code was modified.
 
    Each transition calls `Machine::key_press(key_bits, down)` to set or
    clear bits in the keyboard matrix — the same function used by real
-   keyboard input.  SHIFT is pressed/released alongside the character key
-   when needed.
+   keyboard input.
 
 4. **Cancellation**: Any real keypress during an active paste calls
    `TextPaster::cancel()`, which releases any held keys and clears the queue.
@@ -106,8 +112,24 @@ The feature is entirely additive — no existing emulation code was modified.
   Ctrl+R for NMI, Ctrl+B for break).  It is intercepted before reaching the
   Oric keyboard matrix.
 
+## Compatibility
+
+Tested successfully on both **Oric Atmos** and **Oric-1** modes.  The Oric-1
+ROM has a slower keyboard debounce routine, which required the SHIFT_SETTLE
+phase (see above) to avoid dropped or mis-decoded shifted characters.
+
+## Platform support
+
+The implementation is fully **platform-independent**: pure C++17, the
+cross-platform SDL3 clipboard API (`SDL_GetClipboardText()`), and the
+emulator's own `Machine::key_press()` function.  No Windows-specific code.
+
 ## Revision history
 
+- **v1.2** — Added `SHIFT_SETTLE` state: SHIFT is pressed one frame before
+  the character key for shifted characters.  Reverted to original timing
+  (HOLD=3, GAP=2) for reliable operation on the Oric-1 ROM.  Tested on
+  both Oric-1 and Oric Atmos.
 - **v1.1** — Doubled paste speed (HOLD 3→2, GAP 2→1 frames, ~20 chars/sec).
   Added a longer initial gap (5 frames) before the first keystroke to fix a
   cosmetic one-character-left-shift that occurred vs Oricutron.

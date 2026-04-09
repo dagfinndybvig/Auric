@@ -35,8 +35,8 @@ private:
     static constexpr uint8_t SHIFT_KEY_BITS = 36;
 
     // Number of frames to hold a key down / pause between keys.
-    static constexpr int HOLD_FRAMES        = 2;   // ~40 ms at 50 Hz
-    static constexpr int GAP_FRAMES         = 1;   // ~20 ms at 50 Hz
+    static constexpr int HOLD_FRAMES        = 3;   // ~60 ms at 50 Hz
+    static constexpr int GAP_FRAMES         = 2;   // ~40 ms at 50 Hz
     static constexpr int INITIAL_GAP_FRAMES = 5;   // ~100 ms — let cursor settle
 
     struct KeyAction {
@@ -44,7 +44,7 @@ private:
         bool    needs_shift;
     };
 
-    enum class State { IDLE, KEY_DOWN, KEY_UP, GAP };
+    enum class State { IDLE, KEY_DOWN, KEY_UP, GAP, SHIFT_SETTLE };
 
     std::queue<KeyAction> queue;
     State   state         = State::IDLE;

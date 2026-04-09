@@ -214,17 +214,26 @@ void TextPaster::update(Machine& machine)
                 current_key   = action.key_bits;
                 current_shift = action.needs_shift;
 
-                // Press the key (and SHIFT if needed).
                 if (current_shift) {
+                    // Press SHIFT first; the character key follows after
+                    // one settle frame so the ROM registers SHIFT reliably.
                     machine.key_press(SHIFT_KEY_BITS, true);
+                    state = State::SHIFT_SETTLE;
+                } else {
+                    machine.key_press(current_key, true);
+                    state = State::KEY_DOWN;
                 }
-                machine.key_press(current_key, true);
-
-                state = State::KEY_DOWN;
                 frame_counter = 0;
             }
             break;
         }
+
+        case State::SHIFT_SETTLE:
+            // SHIFT has been held for one frame; now press the character key.
+            machine.key_press(current_key, true);
+            state = State::KEY_DOWN;
+            frame_counter = 0;
+            break;
 
         case State::KEY_DOWN:
             if (frame_counter >= HOLD_FRAMES) {
@@ -258,6 +267,8 @@ void TextPaster::cancel(Machine& machine)
         if (current_shift) {
             machine.key_press(SHIFT_KEY_BITS, false);
         }
+    } else if (state == State::SHIFT_SETTLE) {
+        machine.key_press(SHIFT_KEY_BITS, false);
     }
     queue = {};
     state = State::IDLE;
