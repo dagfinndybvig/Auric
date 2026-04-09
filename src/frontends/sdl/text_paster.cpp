@@ -187,6 +187,7 @@ void TextPaster::start(const std::string& text)
     if (!queue.empty()) {
         state = State::GAP;
         frame_counter = 0;
+        first_char = true;
     }
 }
 
@@ -200,8 +201,10 @@ void TextPaster::update(Machine& machine)
     ++frame_counter;
 
     switch (state) {
-        case State::GAP:
-            if (frame_counter >= GAP_FRAMES) {
+        case State::GAP: {
+            int gap = first_char ? INITIAL_GAP_FRAMES : GAP_FRAMES;
+            if (frame_counter >= gap) {
+                first_char = false;
                 if (queue.empty()) {
                     state = State::IDLE;
                     return;
@@ -221,6 +224,7 @@ void TextPaster::update(Machine& machine)
                 frame_counter = 0;
             }
             break;
+        }
 
         case State::KEY_DOWN:
             if (frame_counter >= HOLD_FRAMES) {

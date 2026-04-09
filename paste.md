@@ -77,8 +77,12 @@ The feature is entirely additive — no existing emulation code was modified.
    simulates typing one character at a time:
 
    ```
-   GAP (2 frames) → KEY_DOWN (3 frames) → KEY_UP → GAP → next character
+   GAP (1 frame) → KEY_DOWN (2 frames) → KEY_UP → GAP → next character
    ```
+
+   The very first character uses a longer initial gap (5 frames / 100 ms)
+   to let the cursor settle, ensuring alignment with other emulators like
+   Oricutron.
 
    Each transition calls `Machine::key_press(key_bits, down)` to set or
    clear bits in the keyboard matrix — the same function used by real
@@ -102,13 +106,9 @@ The feature is entirely additive — no existing emulation code was modified.
   Ctrl+R for NMI, Ctrl+B for break).  It is intercepted before reaching the
   Oric keyboard matrix.
 
-## Known oddity
+## Revision history
 
-When pasting the same BASIC program into Auric and Oricutron, the text in
-Auric appears shifted one character to the left compared to Oricutron.  This
-does not affect program correctness — the pasted BASIC program runs without
-issue in both emulators.
-
-The likely cause is a difference in initial cursor positioning or prompt
-handling between the two emulators.  A longer initial delay before the first
-keystroke might align the output, but this has not been investigated further.
+- **v1.1** — Doubled paste speed (HOLD 3→2, GAP 2→1 frames, ~20 chars/sec).
+  Added a longer initial gap (5 frames) before the first keystroke to fix a
+  cosmetic one-character-left-shift that occurred vs Oricutron.
+- **v1.0** — Initial implementation.
