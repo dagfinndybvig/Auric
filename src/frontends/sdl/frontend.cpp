@@ -291,6 +291,17 @@ bool Frontend::handle_frame()
                                 oric.do_break();
                                 special_pressed = true;
                             }
+
+                            else if (scancode == SDL_SCANCODE_V) {
+                                char* clipboard = SDL_GetClipboardText();
+                                if (clipboard && clipboard[0] != '\0') {
+                                    text_paster.start(std::string(clipboard));
+                                }
+                                if (clipboard) {
+                                    SDL_free(clipboard);
+                                }
+                                special_pressed = true;
+                            }
                         }
                         else {
                             if (scancode == SDL_SCANCODE_F2) {
@@ -306,11 +317,14 @@ bool Frontend::handle_frame()
                     }
 
                     if (! special_pressed) {
-                        if (!special_pressed) {
-                            auto key = oric_key_map.find(scancode);
-                            if (key != oric_key_map.end()) {
-                                oric.get_machine().key_press(key->second, event.type == SDL_EVENT_KEY_DOWN);
-                            }
+                        // Cancel any active paste when the user presses a real key.
+                        if (text_paster.is_active() && event.type == SDL_EVENT_KEY_DOWN) {
+                            text_paster.cancel(oric.get_machine());
+                        }
+
+                        auto key = oric_key_map.find(scancode);
+                        if (key != oric_key_map.end()) {
+                            oric.get_machine().key_press(key->second, event.type == SDL_EVENT_KEY_DOWN);
                         }
                     }
                     break;
@@ -330,6 +344,21 @@ bool Frontend::handle_frame()
             }
         }
     }
+
+    // Check if the GUI "Paste text" button was clicked.
+    if (gui.consume_paste_request()) {
+        char* clipboard = SDL_GetClipboardText();
+        if (clipboard && clipboard[0] != '\0') {
+            text_paster.start(std::string(clipboard));
+        }
+        if (clipboard) {
+            SDL_free(clipboard);
+        }
+    }
+
+    // Advance the clipboard paste state machine (one step per frame).
+    text_paster.update(oric.get_machine());
+
     return true;
 }
 
