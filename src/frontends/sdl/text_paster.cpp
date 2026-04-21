@@ -1,8 +1,23 @@
 // =========================================================================
-//   Clipboard paste support for the Auric emulator.
-//   Feeds host clipboard text into the Oric keyboard matrix character by
-//   character, simulating physical key presses.
+//   Copyright (C) 2026 by Anders Piniesjö <pugo@pugo.org>
+//
+//   This program is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU General Public License as published by
+//   the Free Software Foundation, either version 3 of the License, or
+//   (at your option) any later version.
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU General Public License for more details.
+//
+//   You should have received a copy of the GNU General Public License
+//   along with this program.  If not, see <http://www.gnu.org/licenses/>
 // =========================================================================
+
+// Clipboard paste support for the Auric emulator.
+// Feeds host clipboard text into the Oric keyboard matrix character by
+// character, simulating physical key presses.
 
 #include "text_paster.hpp"
 #include "machine.hpp"
@@ -172,11 +187,25 @@ void TextPaster::start(const std::string& text)
     queue = {};
     state = State::IDLE;
 
+    bool skip_next_lf = false;
     for (char c : text) {
-        // Collapse \r\n into a single RETURN.
+        // Collapse \r\n (Windows line endings) into a single RETURN.
         if (c == '\r') {
+            skip_next_lf = true;
+            // Map the \r to RETURN
+            auto action = char_to_key('\n');
+            if (action.has_value()) {
+                queue.push(action.value());
+            }
             continue;
         }
+        if (c == '\n' && skip_next_lf) {
+            // This \n follows a \r, so skip it (already handled above).
+            skip_next_lf = false;
+            continue;
+        }
+        skip_next_lf = false;
+
         auto action = char_to_key(c);
         if (action.has_value()) {
             queue.push(action.value());
