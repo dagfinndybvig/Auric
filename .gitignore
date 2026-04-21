@@ -10,3 +10,15 @@ oric
 tests/run_tests.cpp
 run_tests
 .directory
+
+# Build directories
+build/
+build-vs2022/
+
+# ROM files (must be obtained separately)
+ROMS/*.rom
+
+# IDE files
+.vscode/
+.idea/
+
