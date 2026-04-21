@@ -236,6 +236,11 @@ void TextPaster::update(Machine& machine)
             if (speed_multiplier > 0.0f) {
                 gap = static_cast<int>(gap / speed_multiplier);
             }
+            // Ensure minimum initial gap so first character isn't dropped
+            // even at high speeds (cursor needs time to settle).
+            if (first_char && gap < 3) {
+                gap = 3;
+            }
             if (frame_counter >= gap) {
                 first_char = false;
                 if (queue.empty()) {
