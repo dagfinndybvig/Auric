@@ -126,6 +126,13 @@ void Gui::render()
         if (ImGui::Button("Paste text")) {
             paste_requested = true;
         }
+        ImGui::SameLine();
+        ImGui::Text("Speed:");
+        ImGui::SameLine();
+        float paste_speed = oric.get_frontend().get_paste_speed();
+        if (ImGui::SliderFloat("##paste_speed", &paste_speed, 0.5f, 3.0f, "%.1fx")) {
+            oric.get_frontend().set_paste_speed(paste_speed);
+        }
 
         ImGui::Text("Video:");
         if (ImGui::Button("Video Settings")) {

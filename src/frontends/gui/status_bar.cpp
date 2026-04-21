@@ -65,6 +65,9 @@ void StatusBar::set_flag(uint16_t flag, bool on)
         if (active_flags & StatusbarFlags::warp_mode) {
             flags_string.append("[Warp]");
         }
+        if (active_flags & StatusbarFlags::pasting) {
+            flags_string.append("[Paste]");
+        }
 
         flags_text = flags_string;
     }

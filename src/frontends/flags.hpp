@@ -22,6 +22,7 @@ enum StatusbarFlags : uint16_t
 {
     warp_mode = 1,
     loading = 2,
+    pasting = 4,
 };
 
 #endif // FRONTENDS_FLAGS_H

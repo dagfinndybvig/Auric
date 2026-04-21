@@ -357,7 +357,14 @@ bool Frontend::handle_frame()
     }
 
     // Advance the clipboard paste state machine (one step per frame).
+    bool was_active = text_paster.is_active();
     text_paster.update(oric.get_machine());
+    bool is_active = text_paster.is_active();
+
+    // Update status bar paste indicator when state changes.
+    if (was_active != is_active) {
+        gui.status_bar().set_flag(StatusbarFlags::pasting, is_active);
+    }
 
     return true;
 }

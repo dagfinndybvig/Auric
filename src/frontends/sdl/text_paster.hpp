@@ -45,6 +45,12 @@ public:
     /// Abort any paste in progress and release held keys.
     void cancel(Machine& machine);
 
+    /// Set the paste speed multiplier (0.5 = half speed, 2.0 = double speed).
+    void set_speed_multiplier(float multiplier) { speed_multiplier = multiplier; }
+
+    /// Get the current speed multiplier.
+    float get_speed_multiplier() const { return speed_multiplier; }
+
 private:
     // Oric LSHIFT position in the keyboard matrix.
     static constexpr uint8_t SHIFT_KEY_BITS = 36;
@@ -67,6 +73,7 @@ private:
     bool    first_char    = false;
     uint8_t current_key   = 0;
     bool    current_shift = false;
+    float   speed_multiplier = 1.0f;  // 1.0 = normal speed
 
     /// Map an ASCII character to its Oric keyboard matrix position.
     /// Returns std::nullopt for characters that have no Oric key equivalent.

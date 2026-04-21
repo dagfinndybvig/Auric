@@ -100,6 +100,18 @@ public:
      */
     virtual StatusBar& get_status_bar() { return gui.status_bar(); }
 
+    /**
+     * Set paste speed multiplier.
+     * @param speed speed multiplier (0.5 = half speed, 2.0 = double)
+     */
+    void set_paste_speed(float speed) { text_paster.set_speed_multiplier(speed); }
+
+    /**
+     * Get current paste speed multiplier.
+     * @return current speed multiplier
+     */
+    float get_paste_speed() const { return text_paster.get_speed_multiplier(); }
+
     virtual std::optional<std::filesystem::path> select_file(const std::string& title);
 
     /**

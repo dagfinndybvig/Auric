@@ -232,6 +232,10 @@ void TextPaster::update(Machine& machine)
     switch (state) {
         case State::GAP: {
             int gap = first_char ? INITIAL_GAP_FRAMES : GAP_FRAMES;
+            // Apply speed multiplier (slower speed = more frames needed).
+            if (speed_multiplier > 0.0f) {
+                gap = static_cast<int>(gap / speed_multiplier);
+            }
             if (frame_counter >= gap) {
                 first_char = false;
                 if (queue.empty()) {
@@ -264,8 +268,13 @@ void TextPaster::update(Machine& machine)
             frame_counter = 0;
             break;
 
-        case State::KEY_DOWN:
-            if (frame_counter >= HOLD_FRAMES) {
+        case State::KEY_DOWN: {
+            int hold = HOLD_FRAMES;
+            // Apply speed multiplier (slower speed = more frames needed).
+            if (speed_multiplier > 0.0f) {
+                hold = static_cast<int>(hold / speed_multiplier);
+            }
+            if (frame_counter >= hold) {
                 // Release the key (and SHIFT).
                 machine.key_press(current_key, false);
                 if (current_shift) {
@@ -276,6 +285,7 @@ void TextPaster::update(Machine& machine)
                 frame_counter = 0;
             }
             break;
+        }
 
         case State::KEY_UP:
             // Transition straight into GAP (the release frame counts as gap).
