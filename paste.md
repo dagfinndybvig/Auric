@@ -14,11 +14,26 @@ The clipboard contents are typed into the Oric one character at a time.
 
 1. Press **F1** to open the GUI overlay.
 2. Click the **Paste text** button (under the "Input" section).
-3. Press **F1** again to close the GUI and watch the text being typed.
+3. Adjust the **Speed** slider if desired (0.5x to 3.0x).
+4. Press **F1** again to close the GUI and watch the text being typed.
 
 ### Cancelling a paste
 
 Press any key during an active paste to cancel it immediately.
+
+### Paste speed control
+
+The paste speed can be adjusted from **0.5x** (half speed) to **3.0x** (triple speed)
+using the slider in the GUI menu. The default is **1.0x** (~10 characters per second
+for unshifted characters).
+
+Higher speeds may occasionally drop characters on slower emulated systems; reduce
+the speed if you experience input errors.
+
+### Progress indicator
+
+When a paste is active, a **[Paste]** indicator appears in the status bar at the
+bottom of the window, next to flags like [Tape] and [Warp].
 
 ### Tips
 
@@ -52,12 +67,14 @@ The feature is entirely additive — no existing emulation code was modified.
 
 | File | Role |
 |------|------|
-| `src/frontends/sdl/text_paster.hpp` | `TextPaster` class declaration |
+| `src/frontends/sdl/text_paster.hpp` | `TextPaster` class declaration (incl. speed control) |
 | `src/frontends/sdl/text_paster.cpp` | Implementation: character lookup table and state machine |
-| `src/frontends/sdl/frontend.cpp` | Ctrl+V handling and per-frame `update()` call |
-| `src/frontends/sdl/frontend.hpp` | `TextPaster` member added to `Frontend` |
-| `src/frontends/gui/gui.cpp` | "Paste text" button in the ImGui menu |
+| `src/frontends/sdl/frontend.cpp` | Ctrl+V handling and per-frame `update()` call; status bar integration |
+| `src/frontends/sdl/frontend.hpp` | `TextPaster` member; speed getter/setter |
+| `src/frontends/gui/gui.cpp` | "Paste text" button and speed slider in ImGui menu |
 | `src/frontends/gui/gui.hpp` | `paste_requested` flag and `consume_paste_request()` |
+| `src/frontends/gui/status_bar.cpp` | `[Paste]` flag display |
+| `src/frontends/flags.hpp` | `pasting` flag definition |
 | `src/frontends/sdl/CMakeLists.txt` | `text_paster.cpp` added to build |
 
 ### How it works
@@ -95,7 +112,13 @@ The feature is entirely additive — no existing emulation code was modified.
    clear bits in the keyboard matrix — the same function used by real
    keyboard input.
 
-4. **Cancellation**: Any real keypress during an active paste calls
+4. **Progress indicator**: The status bar displays `[Paste]` while a paste
+   operation is active, implemented via `StatusBar::set_flag()` in `frontend.cpp`.
+
+5. **Speed control**: The `speed_multiplier` (default 1.0) divides the frame
+   counters for `HOLD_FRAMES` and `GAP_FRAMES`, allowing 0.5x–3.0x speed.
+
+6. **Cancellation**: Any real keypress during an active paste calls
    `TextPaster::cancel()`, which releases any held keys and clears the queue.
 
 ### Design decisions
@@ -126,6 +149,8 @@ emulator's own `Machine::key_press()` function.  No Windows-specific code.
 
 ## Revision history
 
+- **v1.3** — Added paste speed slider (0.5x–3.0x) and `[Paste]` status bar
+  indicator. Fixed `\r\n` (Windows CRLF) handling to emit single RETURN.
 - **v1.2** — Added `SHIFT_SETTLE` state: SHIFT is pressed one frame before
   the character key for shifted characters.  Reverted to original timing
   (HOLD=3, GAP=2) for reliable operation on the Oric-1 ROM.  Tested on

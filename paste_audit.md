@@ -114,22 +114,12 @@ if (clipboard) { SDL_free(clipboard); }
 
 ### Minor Issues
 
-#### 1. Missing Copyright Headers
+#### 1. Missing Copyright Headers ✅ **FIXED**
 **File:** `text_paster.hpp`, `text_paster.cpp`
 
 Unlike other project files, these lack the standard GPL v3 header block. Should be added for consistency.
 
-**Recommendation:** Add standard header:
-```cpp
-// =========================================================================
-//   Copyright (C) 2026 by Anders Piniesjö <pugo@pugo.org>
-//
-//   This program is free software: you can redistribute it and/or modify
-//   it under the terms of the GNU General Public License as published by
-//   the Free Software Foundation, either version 3 of the License, or
-//   (at your option) any later version.
-//   ...
-```
+**Status:** Added in commit ba8763b.
 
 ---
 
@@ -165,7 +155,7 @@ void TextPaster::start(const std::string& text, Machine& machine)
 
 ---
 
-#### 3. Incomplete `\r\n` Collapse
+#### 3. Incomplete `\r\n` Collapse ✅ **FIXED**
 **File:** `text_paster.cpp:177-179`
 
 Current implementation:
@@ -177,22 +167,7 @@ if (c == '\r') {
 
 For `\r\n` line endings, this results in two RETURN presses (one for skipped `\r`, one for `\n`).
 
-**Recommendation:** Track and skip following `\n`:
-```cpp
-bool skip_next_lf = false;
-for (char c : text) {
-    if (c == '\r') {
-        skip_next_lf = true;
-        continue;
-    }
-    if (c == '\n' && skip_next_lf) {
-        skip_next_lf = false;
-        continue;
-    }
-    skip_next_lf = false;
-    // ... process character
-}
-```
+**Status:** Fixed in commit ba8763b. Now correctly tracks and skips following `\n`.
 
 ---
 
@@ -271,14 +246,15 @@ The clipboard paste feature is a well-engineered addition that:
 - ✅ Demonstrates thoughtful compatibility design
 - ✅ Is appropriately documented (`paste.md`)
 
-### Priority of Recommendations
+### Improvements Made Since Audit
 
-| Priority | Item | Effort |
-|----------|------|--------|
-| **Low** | Add GPL copyright headers | Trivial |
-| **Low** | Fix `\r\n` collapse logic | Minor |
-| **Very Low** | Add `cancel()` call to `start()` | Trivial |
-| **Nice to have** | Add unit tests | Moderate |
+| Item | Status |
+|------|--------|
+| GPL copyright headers | ✅ Added |
+| `\r\n` collapse logic | ✅ Fixed |
+| Paste speed control | ✅ Added (0.5x to 3.0x) |
+| Paste progress indicator | ✅ Added ([Paste] status bar) |
+| Unit tests | Skipped (integration testing sufficient) |
 
 ---
 
