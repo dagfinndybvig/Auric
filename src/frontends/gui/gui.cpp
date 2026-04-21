@@ -130,7 +130,7 @@ void Gui::render()
         ImGui::Text("Speed:");
         ImGui::SameLine();
         float paste_speed = oric.get_frontend().get_paste_speed();
-        if (ImGui::SliderFloat("##paste_speed", &paste_speed, 0.5f, 3.0f, "%.1fx")) {
+        if (ImGui::SliderFloat("##paste_speed", &paste_speed, 0.5f, 1.5f, "%.1fx")) {
             oric.get_frontend().set_paste_speed(paste_speed);
         }
 

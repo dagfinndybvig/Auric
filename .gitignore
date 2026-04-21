@@ -22,3 +22,14 @@ ROMS/*.rom
 .vscode/
 .idea/
 
+# Documentation and manuals (copyrighted material)
+*.pdf
+pdf_content.txt
+
+# Documentation files in doc/ folder (extracted/copyrighted)
+doc/basic_programs.txt
+doc/*.pdf
+
+# Runtime config files
+imgui.ini
+
