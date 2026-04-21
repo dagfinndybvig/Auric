@@ -26,6 +26,7 @@
 #include <SDL3/SDL_audio.h>
 
 #include "texture.hpp"
+#include "text_paster.hpp"
 
 #include "frontends/gui/gui.hpp"
 
@@ -150,6 +151,7 @@ protected:
     int32_t gl_u_texture;
 
     Gui gui;
+    TextPaster text_paster;
     Texture oric_texture;
 
     std::vector<uint8_t> status_pixels;

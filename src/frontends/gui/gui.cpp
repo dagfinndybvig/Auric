@@ -122,6 +122,11 @@ void Gui::render()
             oric.do_break();
         }
 
+        ImGui::Text("Input:");
+        if (ImGui::Button("Paste text")) {
+            paste_requested = true;
+        }
+
         ImGui::Text("Video:");
         if (ImGui::Button("Video Settings")) {
             ImVec2 pos  = ImGui::GetWindowPos();

@@ -2,6 +2,7 @@
 add_library(frontend_sdl3
         frontend.cpp
         texture.cpp
+        text_paster.cpp
 )
 
 target_include_directories(frontend_sdl3

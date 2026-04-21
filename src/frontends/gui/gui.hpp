@@ -42,6 +42,13 @@ public:
 
     void toggle_gui() { show_gui = !show_gui; }
 
+    /// Returns true (and resets the flag) if the user clicked "Paste text".
+    bool consume_paste_request() {
+        bool r = paste_requested;
+        paste_requested = false;
+        return r;
+    }
+
 private:
     Oric& oric;
 
@@ -53,6 +60,7 @@ private:
     bool show_gui{false};
     bool initialized{false};
     bool show_video_window{false};
+    bool paste_requested{false};
 
     bool enable_scanlines{false};
     bool enable_vertical_lines{false};
