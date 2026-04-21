@@ -49,7 +49,7 @@ Config::Config() :
     _verbose{false},
     _roms_path{"./ROMS"},
     _rom_names{{RomType::Oric1, "basic10.rom"},
-               {RomType::OricAtmos, "basic11b.roms"},
+               {RomType::OricAtmos, "basic11b.rom"},
                {RomType::Microdisk, "microdis.rom"}},
     _fonts_path{"./fonts"},
     _images_path{"./images"}
